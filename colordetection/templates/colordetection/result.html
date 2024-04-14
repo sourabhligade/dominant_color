@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominant Color Result</title>
+    <style>
+        /* Define styles for the color container */
+        .color-container {
+            display: inline-block;
+            border: 2px solid black; /* Black border */
+            padding: 10px; /* Add padding for better visual appearance */
+            margin-bottom: 20px; /* Add margin bottom for spacing */
+        }
+
+        /* Define styles for the color block */
+        .color-block {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dominant Color Identification</h1>
+
+    <h2>Dominant Color:</h2>
+    <div class="color-container">
+        <!-- Use the defined styles for the color block -->
+        <div class="color-block" style="background-color: rgb({{ dominant_color.0 }}, {{ dominant_color.1 }}, {{ dominant_color.2 }});"></div>
+    </div>
+    <!-- Display the RGB value -->
+    <p>RGB Value: {{ dominant_color }}</p>
+</body>
+</html>
