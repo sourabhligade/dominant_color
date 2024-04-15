@@ -2,6 +2,13 @@ from django.shortcuts import render
 from .forms import ImageUploadForm
 import cv2
 import numpy as np
+import pandas as pd
+
+color_data = pd.read_csv('colordetection/data/colors.csv')
+
+index = ["color", "color_name", "hex", "R", "G", "B"]
+csv = pd.read_csv('colordetection/data/colors.csv', names=index, header=None)
+
 
 def find_dominant_color(image_path):
     # Load the image
@@ -30,6 +37,15 @@ def find_dominant_color(image_path):
 
     return dominant_color_rgb
 
+def get_color_name(R, G, B):
+    minimum = 10000
+    for i in range(len(csv)):
+        d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
+        if d <= minimum:
+            minimum = d
+            cname = csv.loc[i, "color_name"]
+    return cname
+
 def upload_image(request):
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
@@ -42,8 +58,11 @@ def upload_image(request):
 
             # Find the dominant color
             dominant_color_rgb = find_dominant_color(image_path)
+            
+            # Find the nearest color name
+            nearest_color_name = get_color_name(*dominant_color_rgb)
 
-        return render(request, 'colordetection/result.html', {'dominant_color': dominant_color_rgb})
+            return render(request, 'colordetection/result.html', {'dominant_color': dominant_color_rgb, 'color_name': nearest_color_name})
     else:
         form = ImageUploadForm()
     return render(request, 'colordetection/upload.html', {'form': form})
