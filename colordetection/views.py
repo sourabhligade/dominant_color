@@ -7,7 +7,6 @@ from ultralytics import YOLO
 import os
 from django.conf import settings
 
-
 # Load color data
 color_data = pd.read_csv('colordetection/data/colors.csv')
 index = ["color", "color_name", "hex", "R", "G", "B"]
@@ -16,10 +15,7 @@ csv = pd.read_csv('colordetection/data/colors.csv', names=index, header=None)
 # Load YOLO model
 model = YOLO('yolov8n.pt')  # you can replace 'yolov8n.pt' with the appropriate model file
 
-def find_dominant_color(image_path):
-    # Load the image
-    image = cv2.imread(image_path)
-    
+def find_dominant_color(image):
     # Reshape the image into a 2D array of pixels
     pixels = image.reshape((-1, 3))
     
@@ -58,20 +54,30 @@ def yolo_object_detection(image_path):
 
     # Process the detection results
     detection_results = []
+    image = cv2.imread(image_path)
     for result in results:
         for box in result.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])  # bounding box coordinates
             conf = float(box.conf[0])  # confidence score
             cls = int(box.cls[0])  # class id
             label = model.names[cls]  # class label
+            
+            # Extract the region of interest (ROI) from the image
+            roi = image[y1:y2, x1:x2]
+            
+            # Find the dominant color in the ROI
+            dominant_color_rgb = find_dominant_color(roi)
+            nearest_color_name = get_color_name(*dominant_color_rgb)
+            
             detection_results.append({
                 'label': label,
                 'confidence': conf,
-                'box': (x1, y1, x2 - x1, y2 - y1)  # (x, y, width, height)
+                'box': (x1, y1, x2 - x1, y2 - y1),  # (x, y, width, height)
+                'dominant_color': dominant_color_rgb,
+                'color_name': nearest_color_name
             })
     
     # Draw bounding boxes on the image
-    image = cv2.imread(image_path)
     for detection in detection_results:
         x, y, w, h = detection['box']
         label = detection['label']
@@ -96,12 +102,6 @@ def upload_image(request):
             # Get the path of the uploaded image
             image_path = form.instance.image.path
             
-            # Find the dominant color
-            dominant_color_rgb = find_dominant_color(image_path)
-            
-            # Find the nearest color name
-            nearest_color_name = get_color_name(*dominant_color_rgb)
-            
             # Perform YOLO object detection
             result_image_path, detection_results = yolo_object_detection(image_path)
             
@@ -109,8 +109,6 @@ def upload_image(request):
             result_image_url = result_image_path.replace(settings.MEDIA_ROOT, settings.MEDIA_URL)
 
             return render(request, 'colordetection/result.html', {
-                'dominant_color': dominant_color_rgb,
-                'color_name': nearest_color_name,
                 'result_image_url': result_image_url,
                 'detections': detection_results
             })
