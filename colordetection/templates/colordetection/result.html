@@ -77,7 +77,7 @@
                         <div class="color-block" style="background-color: rgb({{ detection.dominant_color.0 }}, {{ detection.dominant_color.1 }}, {{ detection.dominant_color.2 }});"></div>
                         <span>{{ detection.dominant_color }}</span>
                     </td>
-                    <td>{{ detection.nearest_color_name }}</td>
+                    <td>{{ detection.color_name }}</td>  <!-- Ensure this key is correct -->
                 </tr>
                 {% endfor %}
             </tbody>
