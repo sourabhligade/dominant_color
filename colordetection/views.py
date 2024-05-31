@@ -94,7 +94,16 @@ def yolo_object_detection(image_path):
             # Draw bounding boxes and numbers on the image
             color = colors[idx]  # Use the unique color for each bounding box
             cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(image, str(detection_count), (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
+            # Draw a filled rectangle for the label background
+            label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+            label_background = (x1, y1 - label_size[1] - 10, x1 + label_size[0], y1 - 10)
+            cv2.rectangle(image, (label_background[0], label_background[1]), 
+                          (label_background[2], label_background[3]), color, cv2.FILLED)
+            
+            # Put the text label and number
+            cv2.putText(image, label, (x1, y1 - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv2.putText(image, str(detection_count), (x1, y1 - 35), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
             detection_count += 1
     
     # Save the result image
