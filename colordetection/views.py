@@ -6,6 +6,7 @@ import pandas as pd
 from ultralytics import YOLO
 import os
 from django.conf import settings
+import random
 
 # Load color data
 color_data = pd.read_csv('colordetection/data/colors.csv')
@@ -39,15 +40,6 @@ def find_dominant_color(image):
     
     return dominant_color_rgb
 
-#def get_color_name(R, G, B):
-    minimum = 10000
-    for i in range(len(csv)):
-        d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
-        if d <= minimum:
-            minimum = d
-            cname = csv.loc[i, "color_name"]
-    return cname
-
 def get_color_name(R, G, B):
     minimum = 10000
     cname = "Unknown"
@@ -58,6 +50,13 @@ def get_color_name(R, G, B):
             cname = csv.loc[i, "color_name"]
     return cname
 
+def generate_colors(num_colors):
+    """Generate distinct colors for the bounding boxes."""
+    colors = []
+    for i in range(num_colors):
+        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        colors.append(color)
+    return colors
 
 def yolo_object_detection(image_path):
     # Perform YOLO object detection
@@ -66,8 +65,11 @@ def yolo_object_detection(image_path):
     # Process the detection results
     detection_results = []
     image = cv2.imread(image_path)
+    detection_count = 1  # Initialize a counter for the detection numbers
+    colors = generate_colors(len(results[0].boxes))  # Generate a unique color for each detection
+
     for result in results:
-        for box in result.boxes:
+        for idx, box in enumerate(result.boxes):
             x1, y1, x2, y2 = map(int, box.xyxy[0])  # bounding box coordinates
             conf = float(box.conf[0])  # confidence score
             cls = int(box.cls[0])  # class id
@@ -81,27 +83,27 @@ def yolo_object_detection(image_path):
             nearest_color_name = get_color_name(*dominant_color_rgb)
             
             detection_results.append({
+                'number': detection_count,
                 'label': label,
                 'confidence': conf,
                 'box': (x1, y1, x2 - x1, y2 - y1),  # (x, y, width, height)
                 'dominant_color': dominant_color_rgb,
                 'color_name': nearest_color_name
             })
-    
-    # Draw bounding boxes on the image
-    for detection in detection_results:
-        x, y, w, h = detection['box']
-        label = detection['label']
-        color = (0, 255, 0)
-        cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-        cv2.putText(image, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+            # Draw bounding boxes and numbers on the image
+            color = colors[idx]  # Use the unique color for each bounding box
+            cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(image, str(detection_count), (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+            detection_count += 1
     
     # Save the result image
-    result_image_path = image_path.replace(".jpg", "_yolo.jpg")
+    result_image_path = os.path.join(settings.MEDIA_ROOT, 'results', os.path.basename(image_path).replace(".jpg", "_yolo.jpg"))
+    os.makedirs(os.path.dirname(result_image_path), exist_ok=True)  # Ensure the directory exists
     cv2.imwrite(result_image_path, image)
-    result_image_url = settings.MEDIA_URL + 'results/' + os.path.basename(image_path)
+    result_image_url = os.path.join(settings.MEDIA_URL, 'results', os.path.basename(result_image_path))
 
-    return result_image_path, detection_results
+    return result_image_url, detection_results
 
 def upload_image(request):
     if request.method == 'POST':
@@ -114,10 +116,7 @@ def upload_image(request):
             image_path = form.instance.image.path
             
             # Perform YOLO object detection
-            result_image_path, detection_results = yolo_object_detection(image_path)
-            
-            # Construct the result image URL
-            result_image_url = result_image_path.replace(settings.MEDIA_ROOT, settings.MEDIA_URL)
+            result_image_url, detection_results = yolo_object_detection(image_path)
 
             return render(request, 'colordetection/result.html', {
                 'result_image_url': result_image_url,
