@@ -3,52 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Image</title>
+    <title>Object Detection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f8f8fc;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;e
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        h1 {
+        .main-title {
+            font-size: 4.9rem;
+            font-weight: bold;
             color: #333;
+            margin-bottom: 1rem;
         }
 
-        form {
-            margin-top: 20px;
+        .tagline {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 2rem;
         }
 
-        button {
-            background-color: #4caf50;
+        .cta-button {
+            background-color: #8b5cf6;
             color: white;
-            padding: 10px 20px;
             border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
             cursor: pointer;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #6b46c1;
+        }
+
+        .discount-banner {
+            background-color: #ffdf00;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .how-it-works {
+            margin-top: 3rem;
+        }
+
+        .section-header {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .how-it-works-description {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upload-button {
+            background-color: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-button:hover {
+            background-color: #6b46c1;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #8b5cf6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+            display: none; /* Hide by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .uploaded-image {
+            margin-top: 2rem;
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #8b5cf6;
             border-radius: 5px;
         }
-
-        button:hover {
-            background-color: #45a049;
-        }
     </style>
+    <script>
+        function showSpinner() {
+            document.getElementById('spinner').style.display = 'block';
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('uploaded-image');
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-        <h1>Dominant Color Identification</h1>
-        <h1>Upload Image</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Upload</button>
-        </form>
+        <header>
+            <h1 class="main-title">Object Detection</h1>
+            <p class="tagline">Upload an Image, Detect Objects, <br><span class="highlight">Get Results Instantly!</span></p>
+            <button class="cta-button">Get Started</button>
+            <p class="discount-banner">Advanced Object Detection at Your Fingertips</p>
+        </header>
+
+        <section class="how-it-works">
+            <h2 class="section-header">How Does It Work?</h2>
+            <p class="how-it-works-description">Upload an image and see detected objects in seconds!</p>
+        </section>
+
+        <div class="upload-section">
+            <form method="post" enctype="multipart/form-data" onsubmit="showSpinner()">
+                {% csrf_token %}
+                <input type="file" name="image" id="image-upload" onchange="previewImage(event)" required>
+                <button type="submit" class="upload-button">Upload</button>
+            </form>
+        </div>
+
+        <div class="spinner" id="spinner"></div>
+
+        <div class="uploaded-image-section">
+            <img id="uploaded-image" class="uploaded-image" style="display:none;" alt="Uploaded Image">
+        </div>
     </div>
 </body>
 </html>

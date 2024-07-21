@@ -5,58 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detection Results</title>
     <style>
-        /* Center the container horizontally */
         body {
             display: flex;
-            align-items: flex-start; /* Align items to the top */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f8f8fc;
+            text-align: center;
         }
 
-        /* Container for the image and table */
         .container {
             display: flex;
-            flex-direction: row; /* Arrange items horizontally */
-            justify-content: flex-start; /* Align items to the start */
-            width: 100%; /* Full width */
-            padding: 20px; /* Add some padding */
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Style for the table */
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+
+        .filter-buttons button {
+            background-color: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-buttons button:hover {
+            background-color: #6b46c1;
+        }
+
         table {
             border-collapse: collapse;
-            width: 80%; /* Adjust the width as needed */
-            margin-left: 20px; /* Add some space between the image and table */
+            width: 100%;
+            margin-top: 20px;
         }
 
-        /* Style for table header */
         th, td {
-            border: 1px solid black;
+            border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
 
-        /* Style for the color block */
-        .color-block {
-            width: 30px;
-            height: 30px;
-            border: 1px solid black;
-            display: inline-block;
-            margin-right: 5px;
-            vertical-align: middle;
+        th {
+            background-color: #8b5cf6;
+            color: white;
+            border: 2px solid #8b5cf6;
         }
 
-        /* Style for the image */
+        .color-column {
+            display: table-cell;
+        }
+
+        .color-column.hidden {
+            display: none;
+        }
+
         .result-image {
             max-width: 100%;
-            width: 600px; /* Fixed width */
-            height: 600px;
+            width: auto;
+            height: auto;
+            max-height: 600px;
+            border: 2px solid #8b5cf6;
+            border-radius: 10px;
+        }
+
+        .text-block {
+            padding: 2px 5px;
+            border-radius: 3px;
+            position: relative;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .radar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            position: relative;
+        }
+
+        .radar .box {
+            width: 6px;
+            height: 30px;
+            background-color: #ddd;
+            margin: 0 2px;
+            border-radius: 3px;
+            transition: background-color 0.3s ease;
+        }
+
+        .radar .box.active {
+            background-color: #8b5cf6;
+        }
+
+        #spinner {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
         }
     </style>
+    <script>
+        window.onload = function() {
+            const spinner = document.getElementById('spinner');
+            if (spinner) spinner.style.display = 'none';
+
+            // Initialize table to show "Show Objects" columns
+            filterTable('show-objects');
+
+            document.querySelectorAll('tr[data-dominant-color]').forEach(function(row) {
+                const rgb = row.getAttribute('data-dominant-color').split(',').map(Number);
+                const contrastClass = getContrastClass(rgb);
+                row.classList.add(contrastClass);
+            });
+
+            document.querySelectorAll('.confidence-radar').forEach(function(radar) {
+                const confidence = parseFloat(radar.getAttribute('data-confidence'));
+                const boxes = radar.querySelectorAll('.box');
+                const activeBoxes = Math.round(confidence * 5);
+                boxes.forEach((box, index) => {
+                    if (index < activeBoxes) {
+                        box.classList.add('active');
+                    } else {
+                        box.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        function getContrastClass(rgb) {
+            const r = rgb[0];
+            const g = rgb[1];
+            const b = rgb[2];
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 128 ? 'light-bg' : 'dark-bg';
+        }
+
+        function filterTable(filterType) {
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            // Get column headers and data cells
+            const dominantColorHeader = document.querySelector('th:nth-child(5)');
+            const nearestColorNameHeader = document.querySelector('th:nth-child(6)');
+            const dominantColorCells = table.querySelectorAll('td:nth-child(5)');
+            const nearestColorNameCells = table.querySelectorAll('td:nth-child(6)');
+
+            if (filterType === 'show-objects') {
+                dominantColorHeader.classList.add('hidden');
+                nearestColorNameHeader.classList.add('hidden');
+                dominantColorCells.forEach(cell => cell.classList.add('hidden'));
+                nearestColorNameCells.forEach(cell => cell.classList.add('hidden'));
+                rows.forEach(row => {
+                    row.style.backgroundColor = ''; // Reset background color
+                    row.style.color = 'black'; // Set text color to black
+                    row.style.textShadow = 'none'; // Remove text shadow to improve clarity
+                });
+            } else if (filterType === 'show-colors') {
+                dominantColorHeader.classList.remove('hidden');
+                nearestColorNameHeader.classList.remove('hidden');
+                dominantColorCells.forEach(cell => cell.classList.remove('hidden'));
+                nearestColorNameCells.forEach(cell => cell.classList.remove('hidden'));
+                rows.forEach(row => {
+                    const rgb = row.getAttribute('data-dominant-color').split(',').map(Number);
+                    row.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`; // Set background color based on detected color
+                    row.style.color = getContrastColor(rgb); // Set text color for readability
+                    row.style.textShadow = 'none'; // Remove text shadow to avoid blurriness
+                });
+            }
+        }
+
+        function getContrastColor(rgb) {
+            const r = rgb[0];
+            const g = rgb[1];
+            const b = rgb[2];
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 128 ? 'black' : 'white'; // Choose text color based on background brightness
+        }
+    </script>
 </head>
 <body>
-    <h1>Object Detection Results</h1>
+    <div id="spinner">
+        <img src="spinner.gif" alt="Loading...">
+    </div>
     <div class="container">
+        <h1>Object Detection Results</h1>
         <img class="result-image" src="{{ result_image_url }}" alt="Object Detection Result">
+        <div class="filter-buttons">
+            <button onclick="filterTable('show-objects')">Show Objects</button>
+            <button onclick="filterTable('show-colors')">Show Colors</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -64,26 +219,33 @@
                     <th>Class</th>
                     <th>Confidence</th>
                     <th>Box</th>
-                    <th>Dominant Color</th>
-                    <th>Nearest Color Name</th>
+                    <th class="color-column">Dominant Color</th>
+                    <th class="color-column">Nearest Color Name</th>
                 </tr>
             </thead>
             <tbody>
                 {% for detection in detections %}
-                <tr>
-                    <td>{{ detection.number }}</td>
-                    <td>{{ detection.label }}</td>
-                    <td>{{ detection.confidence }}</td>
-                    <td>{{ detection.box }}</td>
-                    <td>
-                        <div class="color-block" style="background-color: rgb({{ detection.dominant_color.0 }}, {{ detection.dominant_color.1 }}, {{ detection.dominant_color.2 }});"></div>
+                <tr data-dominant-color="{{ detection.dominant_color.0 }},{{ detection.dominant_color.1 }},{{ detection.dominant_color.2 }}">
+                    <td class="text-block">{{ detection.number }}</td>
+                    <td class="text-block">{{ detection.label }}</td>
+                    <td class="text-block confidence-radar" data-confidence="{{ detection.confidence }}">
+                        <div class="radar">
+                            <div class="box"></div>
+                            <div class="box"></div>
+                            <div class="box"></div>
+                            <div class="box"></div>
+                            <div class="box"></div>
+                        </div>
+                    </td>
+                    <td class="text-block">{{ detection.box }}</td>
+                    <td class="text-block color-column">
                         <span>{{ detection.dominant_color }}</span>
                     </td>
-                    <td>{{ detection.color_name }}</td>
+                    <td class="text-block color-column">{{ detection.color_name }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </body>
-</html
+</html>
