@@ -20,6 +20,8 @@ COPY . .
 
 # Set environment variables
 ENV DJANGO_SETTINGS_MODULE=dominant_color.settings
+ENV SECRET_KEY=g@c)y*gmbf)eys(_z7u5=dyxdrd=@fj%q%g@!grcc_y9j0yp5=
+ENV DATABASE_URL=sqlite:///db.sqlite3
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
