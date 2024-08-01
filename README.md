@@ -9,6 +9,7 @@ Check out the detections
 <img width="1310" alt="Screenshot 2024-07-21 at 11 42 25 PM" src="https://github.com/user-attachments/assets/c9c9ff4a-770c-4c11-a869-8c8b11611409">
 Shows Colors of the detected objects and other filters
 <img width="1310" alt="Screenshot 2024-07-21 at 11 42 32 PM" src="https://github.com/user-attachments/assets/6df99041-cf8f-44c4-8aaf-e48aaee317b6">
+Check out confidence levels
 <img width="1310" alt="Screenshot 2024-07-21 at 11 42 29 PM" src="https://github.com/user-attachments/assets/eb3eef83-6957-40b2-9b42-e8509dcc95b3">
 ## Features
 
