@@ -3,9 +3,10 @@
 This project is a Django-based web application for object detection using the YOLOv8 model. The application allows users to upload images and videos, perform object detection, and display the results with bounding boxes and labels.
 
 
-<img width="329" alt="Screenshot 2024-06-03 at 10 42 14 AM" src="https://github.com/sourabhligade/dominant_color/assets/65074119/fbd5250a-dc94-4cc4-8eb3-4a177bb2d97c">
-<img width="1440" alt="Screenshot 2024-06-03 at 10 46 22 AM" src="https://github.com/sourabhligade/dominant_color/assets/65074119/37469c59-2e74-43ae-a1fc-1c4d9eef798e">
-
+<img width="1310" alt="Screenshot 2024-07-21 at 11 42 08 PM" src="https://github.com/user-attachments/assets/16609e50-e190-4ddc-abfe-10ca6adc1e4b">
+<img width="1310" alt="Screenshot 2024-07-21 at 11 42 25 PM" src="https://github.com/user-attachments/assets/c9c9ff4a-770c-4c11-a869-8c8b11611409">
+<img width="1310" alt="Screenshot 2024-07-21 at 11 42 32 PM" src="https://github.com/user-attachments/assets/6df99041-cf8f-44c4-8aaf-e48aaee317b6">
+<img width="1310" alt="Screenshot 2024-07-21 at 11 42 29 PM" src="https://github.com/user-attachments/assets/eb3eef83-6957-40b2-9b42-e8509dcc95b3">
 ## Features
 
 - Image and video upload
